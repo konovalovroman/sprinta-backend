@@ -14,7 +14,10 @@ module.exports = {
     node: true,
     jest: true,
   },
-  ignorePatterns: ['.eslintrc.js'],
+  ignorePatterns: [
+    '.eslintrc.js',
+    'src/database/migrations'
+  ],
   rules: {
     'indent': ['error', 4, { "ignoredNodes": ["PropertyDefinition"] }],
     'arrow-parens': ['error', 'always'],
