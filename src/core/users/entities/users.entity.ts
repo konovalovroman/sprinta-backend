@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { Project } from 'src/core/projects/entities/projects.entity';
 import {
     Column,
@@ -21,6 +22,7 @@ export class User {
     email: string;
 
     @Column({ length: 100 })
+    @Exclude()
     password: string;
 
     @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })

@@ -4,6 +4,8 @@ import { User } from './entities/users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { hashString } from 'src/common/helpers/hash.helper';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { hasRecordAffected } from 'src/common/helpers/affected-record.helper';
 
 @Injectable()
 export class UsersService {
@@ -24,6 +26,16 @@ export class UsersService {
         }
     }
 
+    async find(): Promise<User[]> {
+        try {
+            const users = await this.usersRepository.find();
+            return users;
+        } catch (err) {
+            console.log(err);
+            return [];
+        }
+    }
+
     async findById(id: number): Promise<User | null> {
         try {
             const user = await this.usersRepository.findOne({ where: { id } });
@@ -41,6 +53,40 @@ export class UsersService {
         } catch (err) {
             console.log(err);
             return null;
+        }
+    }
+
+    async update(id: number, dto: UpdateUserDto): Promise<User | null> {
+        const { username, password } = dto;
+        const updateUserData: UpdateUserDto = {};
+
+        if (username) {
+            updateUserData.username = username;
+        }
+        if (password) {
+            updateUserData.password = await hashString(password);
+        }
+
+        try {
+            const user = await this.usersRepository.findOne({ where: { id } });
+            if (!user) {
+                return null;
+            }
+            Object.assign(user, updateUserData);
+            return await this.usersRepository.save(user);
+        } catch (err) {
+            console.log(err);
+            return null;
+        }
+    }
+
+    async remove(id: number): Promise<boolean> {
+        try {
+            const result = await this.usersRepository.delete(id);
+            return hasRecordAffected(result);
+        } catch (err) {
+            console.log(err);
+            return false;
         }
     }
 }
