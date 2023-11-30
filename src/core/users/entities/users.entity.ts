@@ -31,7 +31,7 @@ export class User {
     @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
     updatedAt: Date;
 
-    @ManyToMany(() => Project, (project) => project.users)
+    @ManyToMany(() => Project, (project) => project.members)
     @JoinColumn({ name: 'users_and_projects' })
     projects: Project[];
 }

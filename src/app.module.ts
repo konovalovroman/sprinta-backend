@@ -1,10 +1,10 @@
-import { Module } from '@nestjs/common';
+import { ClassSerializerInterceptor, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { CoreModule } from './core/core.module';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { RedisModule } from './redis/redis.module';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtAccessGuard } from './common/guards/jwt-access.guard';
 
 @Module({
@@ -21,6 +21,10 @@ import { JwtAccessGuard } from './common/guards/jwt-access.guard';
         {
             provide: APP_GUARD,
             useClass: JwtAccessGuard,
+        },
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: ClassSerializerInterceptor,
         },
     ],
 })

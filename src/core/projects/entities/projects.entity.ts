@@ -27,9 +27,9 @@ export class Project {
 
     @ManyToOne(() => User, (user) => user.id, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn({ name: 'owner_id' })
-    owner: User;
+    owner: User | null;
 
     @ManyToMany(() => User, (user) => user.projects)
     @JoinTable({ name: 'users_and_projects' })
-    users: User[];
+    members: User[];
 }

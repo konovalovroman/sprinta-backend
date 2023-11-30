@@ -1,7 +1,6 @@
 import {
     BadRequestException,
     Body,
-    ClassSerializerInterceptor,
     Controller,
     Delete,
     Get,
@@ -11,13 +10,11 @@ import {
     Param,
     Patch,
     UseGuards,
-    UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserManipulationGuard } from 'src/common/guards/user-manipulation.guard';
 
-@UseInterceptors(ClassSerializerInterceptor)
 @Controller('users')
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
