@@ -83,10 +83,11 @@ export class ProjectsController {
             id,
             currentUserId,
         });
-        
+
         return;
     }
 
+    @HttpCode(HttpStatus.OK)
     @Post(':id/members/:userId')
     async addUserToProject(
         @Param('id', ParseIntPipe) id: number,
