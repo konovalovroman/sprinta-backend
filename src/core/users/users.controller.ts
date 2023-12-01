@@ -8,6 +8,7 @@ import {
     HttpStatus,
     NotFoundException,
     Param,
+    ParseIntPipe,
     Patch,
     UseGuards,
 } from '@nestjs/common';
@@ -26,8 +27,8 @@ export class UsersController {
     }
 
     @Get(':id')
-    async findById(@Param('id') id: string) {
-        const user = await this.usersService.findById(Number(id));
+    async findById(@Param('id', ParseIntPipe) id: number) {
+        const user = await this.usersService.findById(id);
         if (!user) {
             throw new NotFoundException('User not found');
         }
@@ -36,8 +37,8 @@ export class UsersController {
 
     @UseGuards(UserManipulationGuard)
     @Patch(':id')
-    async update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
-        const user = await this.usersService.update(Number(id), dto);
+    async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserDto) {
+        const user = await this.usersService.update(id, dto);
         if (!user) {
             throw new BadRequestException('User updating error');
         }
@@ -47,9 +48,8 @@ export class UsersController {
     @UseGuards(UserManipulationGuard)
     @HttpCode(HttpStatus.NO_CONTENT)
     @Delete(':id')
-    async remove(@Param('id') id: string) {
-        await this.usersService.remove(Number(id));
+    async remove(@Param('id', ParseIntPipe) id: number) {
+        await this.usersService.remove(id);
         return;
-
     }
 }
