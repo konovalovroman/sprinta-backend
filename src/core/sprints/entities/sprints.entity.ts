@@ -17,7 +17,7 @@ export class Sprint {
     @Column({ length: 40 })
     name: string;
 
-    @Column({ type: 'boolean' })
+    @Column({ type: 'boolean', default: false })
     started: boolean;
 
     @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
