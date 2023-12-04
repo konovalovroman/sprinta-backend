@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { SignupDto } from 'src/auth/dto/signup.dto';
 import { User } from './entities/users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -9,6 +9,8 @@ import { hasRecordAffected } from 'src/common/helpers/affected-record.helper';
 
 @Injectable()
 export class UsersService {
+    private readonly logger = new Logger(UsersService.name);
+
     constructor(
         @InjectRepository(User) private readonly usersRepository: Repository<User>,
     ) {}
@@ -21,7 +23,7 @@ export class UsersService {
         try {
             return await this.usersRepository.save(user);
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return null;
         }
     }
@@ -31,7 +33,7 @@ export class UsersService {
             const users = await this.usersRepository.find();
             return users;
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return [];
         }
     }
@@ -41,7 +43,7 @@ export class UsersService {
             const user = await this.usersRepository.findOne({ where: { id } });
             return user;
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return null;
         }
     }
@@ -51,7 +53,7 @@ export class UsersService {
             const user = await this.usersRepository.findOne({ where: { email } });
             return user;
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return null;
         }
     }
@@ -75,7 +77,7 @@ export class UsersService {
             Object.assign(user, updateUserData);
             return await this.usersRepository.save(user);
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return null;
         }
     }
@@ -85,7 +87,7 @@ export class UsersService {
             const result = await this.usersRepository.delete(id);
             return hasRecordAffected(result);
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return false;
         }
     }

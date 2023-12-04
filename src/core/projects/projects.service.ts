@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Project } from './entities/projects.entity';
 import { Repository } from 'typeorm';
@@ -9,6 +9,8 @@ import { ProjectMemberManipulationData } from './projects.types';
 
 @Injectable()
 export class ProjectsService {
+    private readonly logger = new Logger(ProjectsService.name);
+
     constructor(
         @InjectRepository(Project) private readonly projectsRepository: Repository<Project>,
         private readonly usersService: UsersService,
@@ -28,7 +30,7 @@ export class ProjectsService {
             
             return await this.projectsRepository.save(project);
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return null;
         }
     }
@@ -38,7 +40,7 @@ export class ProjectsService {
             const projects = await this.projectsRepository.find();
             return projects;
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return [];
         }
     }
@@ -51,7 +53,7 @@ export class ProjectsService {
             });
             return project;
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return null;
         }
     }
@@ -69,7 +71,7 @@ export class ProjectsService {
         try {
             return await this.projectsRepository.save(project);
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return null;
         }
     }
@@ -86,7 +88,7 @@ export class ProjectsService {
             const result = await this.projectsRepository.delete(id);
             return hasRecordAffected(result);
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return false;
         }
     }
@@ -101,7 +103,7 @@ export class ProjectsService {
             
             return projects;
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return [];
         }
     }
@@ -119,7 +121,7 @@ export class ProjectsService {
             
             return project;
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return null;
         }
     }
@@ -147,7 +149,7 @@ export class ProjectsService {
             project.members = [...project.members, user];
             return await this.projectsRepository.save(project);
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return null;
         }
     }
@@ -174,7 +176,7 @@ export class ProjectsService {
             });
             return await this.projectsRepository.save(project);
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return null;
         }
     }

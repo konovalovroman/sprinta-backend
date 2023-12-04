@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Sprint } from './entities/sprints.entity';
 import { Repository } from 'typeorm';
@@ -8,6 +8,8 @@ import { hasRecordAffected } from 'src/common/helpers/affected-record.helper';
 
 @Injectable()
 export class SprintsService {
+    private readonly logger = new Logger(SprintsService.name);
+
     constructor(
         @InjectRepository(Sprint) private readonly sprintsRepository: Repository<Sprint>,
         private readonly projectsService: ProjectsService,
@@ -30,7 +32,7 @@ export class SprintsService {
         try {
             return await this.sprintsRepository.save(sprint);
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return null;
         }
     }
@@ -42,7 +44,7 @@ export class SprintsService {
             });
             return sprints;
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return [];
         }
     }
@@ -55,7 +57,7 @@ export class SprintsService {
             });
             return sprint;
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return null;
         }
     }
@@ -82,7 +84,7 @@ export class SprintsService {
         try {
             return await this.sprintsRepository.save(sprint);
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return null;
         }
     }
@@ -101,7 +103,7 @@ export class SprintsService {
             const result = await this.sprintsRepository.delete(id);
             return hasRecordAffected(result);
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return false;
         }
     }
@@ -132,7 +134,7 @@ export class SprintsService {
 
             return sprints;
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return null;
         }
     }
@@ -163,7 +165,7 @@ export class SprintsService {
             delete sprint.project;
             return sprint;
         } catch (err) {
-            console.log(err);
+            this.logger.error(err);
             return null;
         }
     }
