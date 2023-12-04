@@ -66,7 +66,9 @@ export class ProjectsService {
             return null;
         }
 
-        Object.assign(project, dto);
+        if (dto?.name) {
+            project.name = dto.name;
+        }
 
         try {
             return await this.projectsRepository.save(project);
