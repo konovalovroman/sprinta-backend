@@ -53,7 +53,7 @@ export class SprintsService {
         try {
             const sprint = await this.sprintsRepository.findOne({
                 where: { id },
-                relations: ['project.owner'],
+                relations: ['project.owner', 'project.members'],
             });
             return sprint;
         } catch (err) {

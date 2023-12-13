@@ -1,5 +1,5 @@
 import { TaskStatus } from 'src/common/enums/taskStatus.enum';
-import { Project } from 'src/core/projects/entities/projects.entity';
+import { Sprint } from 'src/core/sprints/entities/sprints.entity';
 import { User } from 'src/core/users/entities/users.entity';
 import {
     Column,
@@ -42,7 +42,7 @@ export class Task {
     @JoinColumn({ name: 'author_id' })
     author: User;
 
-    @ManyToOne(() => Project, (project) => project.id, { onDelete: 'SET NULL' })
-    @JoinColumn({ name: 'project_id' })
-    project: Project;
+    @ManyToOne(() => Sprint, (sprint) => sprint.id, { onDelete: 'SET NULL' })
+    @JoinColumn({ name: 'sprint_id' })
+    sprint: Sprint;
 }

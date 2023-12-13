@@ -12,5 +12,6 @@ import { ProjectsModule } from '../projects/projects.module';
     ],
     controllers: [SprintsController],
     providers: [SprintsService],
+    exports: [SprintsService],
 })
 export class SprintsModule {}
