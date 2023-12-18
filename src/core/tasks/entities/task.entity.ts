@@ -1,4 +1,5 @@
 import { TaskStatus } from 'src/common/enums/taskStatus.enum';
+import { Project } from 'src/core/projects/entities/project.entity';
 import { Sprint } from 'src/core/sprints/entities/sprint.entity';
 import { User } from 'src/core/users/entities/user.entity';
 import {
@@ -45,4 +46,8 @@ export class Task {
     @ManyToOne(() => Sprint, (sprint) => sprint.id, { onDelete: 'SET NULL' })
     @JoinColumn({ name: 'sprint_id' })
     sprint: Sprint;
+
+    @ManyToOne(() => Project, (project) => project.id, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'project_id' })
+    project: Project;
 }
