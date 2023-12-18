@@ -17,18 +17,16 @@ import { CreateSprintDto } from './dto/create-sprint.dto';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { UpdateSprintDto } from './dto/update-sprint.dto';
 
-@Controller('projects/:projectId/sprints')
+@Controller('sprints')
 export class SprintsController {
     constructor(private readonly sprintsService: SprintsService) {}
 
     @Post()
     async create(
-        @Param('projectId', ParseIntPipe) projectId: number,
         @CurrentUser('sub') currentUserId: number,
         @Body() dto: CreateSprintDto,
     ) {
         const sprint = await this.sprintsService.create({
-            projectId,
             currentUserId,
             dto,
         });
@@ -40,7 +38,7 @@ export class SprintsController {
         return sprint;
     }
 
-    @Get()
+    @Get('projects/:projectId')
     async find(
         @Param('projectId', ParseIntPipe) projectId: number,
         @CurrentUser('sub') currentUserId: number,
@@ -59,13 +57,11 @@ export class SprintsController {
 
     @Get(':id')
     async findById(
-        @Param('projectId', ParseIntPipe) projectId: number,
         @Param('id', ParseIntPipe) id: number,
         @CurrentUser('sub') currentUserId: number,
     ) {
         const sprint = await this.sprintsService.findProjectSprintById({
             id,
-            projectId,
             currentUserId,
         });
 
@@ -79,14 +75,12 @@ export class SprintsController {
 
     @Patch(':id')
     async update(
-        @Param('projectId', ParseIntPipe) projectId: number,
         @Param('id', ParseIntPipe) id: number,
         @CurrentUser('sub') currentUserId: number,
         @Body() dto: UpdateSprintDto, 
     ) {
         const sprint = await this.sprintsService.update({
             id,
-            projectId,
             currentUserId,
             dto,
         });
@@ -101,13 +95,11 @@ export class SprintsController {
     @HttpCode(HttpStatus.NO_CONTENT)
     @Delete(':id')
     async remove(
-        @Param('projectId', ParseIntPipe) projectId: number,
         @Param('id', ParseIntPipe) id: number,
         @CurrentUser('sub') currentUserId: number,
     ) {
         await this.sprintsService.remove({
             id,
-            projectId,
             currentUserId,
         });
         

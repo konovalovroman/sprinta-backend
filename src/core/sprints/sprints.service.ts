@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { ProjectsService } from '../projects/projects.service';
 import { CreateSprintData, ProjectSprintsQuery, SprintManipulationData } from './spritns.types';
 import { hasRecordAffected } from 'src/common/helpers/affected-record.helper';
+import { isUserProjectMember, isUserProjectOwner } from 'src/common/helpers/project-users.helper';
 
 @Injectable()
 export class SprintsService {
@@ -16,9 +17,10 @@ export class SprintsService {
     ) {}
 
     async create(data: CreateSprintData): Promise<Sprint | null> {
-        const { projectId, currentUserId, dto } = data;
+        const { currentUserId, dto } = data;
+        const { name, endsAt, projectId } = dto;
         const project = await this.projectsService.findById(projectId);
-        const isProjectOwner = project?.owner?.id === currentUserId;
+        const isProjectOwner = isUserProjectOwner(project, currentUserId);
 
         if (!project || !isProjectOwner) {
             return null;
@@ -26,8 +28,11 @@ export class SprintsService {
 
         delete project.members;
 
-        const sprint = this.sprintsRepository.create(dto);
-        sprint.project = project;
+        const sprint = this.sprintsRepository.create({
+            name,
+            endsAt,
+            project,
+        });
 
         try {
             return await this.sprintsRepository.save(sprint);
@@ -63,12 +68,12 @@ export class SprintsService {
     }
 
     async update(data: SprintManipulationData): Promise<Sprint | null> {
-        const { id, projectId, currentUserId, dto } = data;
+        const { id, currentUserId, dto } = data;
         const sprint = await this.findById(id);
-        const isSprintForProject = sprint?.project.id === projectId;
-        const isProjectOwner = sprint?.project.owner?.id === currentUserId;
 
-        if (!sprint || !isSprintForProject || !isProjectOwner) {
+        const isProjectOwner = isUserProjectOwner(sprint?.project, currentUserId);
+
+        if (!sprint || !isProjectOwner) {
             return null;
         }
 
@@ -90,12 +95,12 @@ export class SprintsService {
     }
 
     async remove(data: SprintManipulationData): Promise<boolean> {
-        const { id, projectId, currentUserId } = data;
+        const { id, currentUserId } = data;
         const sprint = await this.findById(id);
-        const isSprintForProject = sprint?.project.id === projectId;
-        const isProjectOwner = sprint?.project.owner?.id === currentUserId;
+        
+        const isProjectOwner = isUserProjectOwner(sprint?.project, currentUserId);
 
-        if (!sprint || !isSprintForProject || !isProjectOwner) {
+        if (!sprint || !isProjectOwner) {
             return false;
         }
 
@@ -120,11 +125,9 @@ export class SprintsService {
                 relations: ['project', 'project.members'],
             });
 
-            const isUserProjectMember = sprints[0]?.project.members.some((user) => {
-                return user.id === currentUserId;
-            });
+            const isProjectMember = isUserProjectMember(sprints[0]?.project, currentUserId);
 
-            if (!isUserProjectMember) {
+            if (!isProjectMember) {
                 return null;
             }
             
@@ -140,25 +143,18 @@ export class SprintsService {
     }
 
     async findProjectSprintById(data: SprintManipulationData): Promise<Sprint | null> {
-        const { id, projectId, currentUserId } = data;
+        const { id, currentUserId } = data;
         try {
             const sprint = await this.sprintsRepository.findOne({
                 where: {
                     id,
-                    project: { id: projectId },
                 },
                 relations: ['project.members'],
             });
 
-            if (!sprint) {
-                return null;
-            }
+            const isProjectMember = isUserProjectMember(sprint?.project, currentUserId);
 
-            const isUserProjectMember = sprint.project.members.some((user) => {
-                return user.id === currentUserId;
-            });
-
-            if (!isUserProjectMember) {
+            if (!sprint || !isProjectMember) {
                 return null;
             }
 
