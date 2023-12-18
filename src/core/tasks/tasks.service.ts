@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Task } from './entities/tasks.entity';
+import { Task } from './entities/task.entity';
 import { Repository } from 'typeorm';
 import { SprintsService } from '../sprints/sprints.service';
 import { CreateTaskData, SprintTasksQuery, TaskManipulationData } from './tasks.types';
 import { TaskStatus } from 'src/common/enums/taskStatus.enum';
-import { User } from '../users/entities/users.entity';
+import { User } from '../users/entities/user.entity';
 import { hasRecordAffected } from 'src/common/helpers/affected-record.helper';
 
 @Injectable()

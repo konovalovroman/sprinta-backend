@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Project } from './entities/projects.entity';
+import { Project } from './entities/project.entity';
 import { Repository } from 'typeorm';
 import { CreateProjectData, ProjectManipulationData } from './projects.types';
 import { hasRecordAffected } from 'src/common/helpers/affected-record.helper';

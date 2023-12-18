@@ -1,22 +1,23 @@
-import { Task } from 'src/core/tasks/entities/tasks.entity';
-import { User } from 'src/core/users/entities/users.entity';
-import {
+import { User } from 'src/core/users/entities/user.entity';
+import { 
     Column,
     CreateDateColumn,
     Entity,
     JoinColumn,
+    JoinTable,
+    ManyToMany,
     ManyToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ name: 'comments' })
-export class Comment {
+@Entity({ name: 'projects' })
+export class Project {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ type: 'text' })
-    text: string;
+    @Column({ length: 40 })
+    name: string;
 
     @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
     createdAt: Date;
@@ -25,10 +26,10 @@ export class Comment {
     updatedAt: Date;
 
     @ManyToOne(() => User, (user) => user.id, { nullable: true, onDelete: 'SET NULL' })
-    @JoinColumn({ name: 'author_id' })
-    author: User;
+    @JoinColumn({ name: 'owner_id' })
+    owner: User | null;
 
-    @ManyToOne(() => Task, (task) => task.id, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'task_id' })
-    task: Task;
+    @ManyToMany(() => User, (user) => user.projects)
+    @JoinTable({ name: 'users_and_projects' })
+    members: User[];
 }

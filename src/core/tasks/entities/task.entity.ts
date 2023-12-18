@@ -1,6 +1,6 @@
 import { TaskStatus } from 'src/common/enums/taskStatus.enum';
-import { Sprint } from 'src/core/sprints/entities/sprints.entity';
-import { User } from 'src/core/users/entities/users.entity';
+import { Sprint } from 'src/core/sprints/entities/sprint.entity';
+import { User } from 'src/core/users/entities/user.entity';
 import {
     Column,
     CreateDateColumn,

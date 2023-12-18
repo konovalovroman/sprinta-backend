@@ -1,35 +1,35 @@
-import { User } from 'src/core/users/entities/users.entity';
-import { 
+import { Project } from 'src/core/projects/entities/project.entity';
+import {
     Column,
     CreateDateColumn,
     Entity,
     JoinColumn,
-    JoinTable,
-    ManyToMany,
     ManyToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ name: 'projects' })
-export class Project {
+@Entity({ name: 'sprints' })
+export class Sprint {
     @PrimaryGeneratedColumn()
     id: number;
 
     @Column({ length: 40 })
     name: string;
 
+    @Column({ type: 'boolean', default: false })
+    started: boolean;
+
     @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
     createdAt: Date;
+
+    @Column({ name: 'ends_at', type: 'timestamp with time zone' })
+    endsAt: Date;
 
     @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
     updatedAt: Date;
 
-    @ManyToOne(() => User, (user) => user.id, { nullable: true, onDelete: 'SET NULL' })
-    @JoinColumn({ name: 'owner_id' })
-    owner: User | null;
-
-    @ManyToMany(() => User, (user) => user.projects)
-    @JoinTable({ name: 'users_and_projects' })
-    members: User[];
+    @ManyToOne(() => Project, (project) => project.id, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'project_id' })
+    project: Project;
 }

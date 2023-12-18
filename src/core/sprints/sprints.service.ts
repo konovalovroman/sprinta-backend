@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Sprint } from './entities/sprints.entity';
+import { Sprint } from './entities/sprint.entity';
 import { Repository } from 'typeorm';
 import { ProjectsService } from '../projects/projects.service';
 import { CreateSprintData, ProjectSprintsQuery, SprintManipulationData } from './spritns.types';

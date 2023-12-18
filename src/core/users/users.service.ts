@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SignupDto } from 'src/auth/dto/signup.dto';
-import { User } from './entities/users.entity';
+import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { hashString } from 'src/common/helpers/hash.helper';

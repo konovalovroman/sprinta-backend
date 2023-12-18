@@ -1,5 +1,5 @@
 import { Exclude } from 'class-transformer';
-import { Project } from 'src/core/projects/entities/projects.entity';
+import { Project } from 'src/core/projects/entities/project.entity';
 import {
     Column,
     CreateDateColumn,
