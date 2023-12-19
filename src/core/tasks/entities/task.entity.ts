@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { TaskStatus } from 'src/common/enums/taskStatus.enum';
 import { Project } from 'src/core/projects/entities/project.entity';
 import { Sprint } from 'src/core/sprints/entities/sprint.entity';
@@ -49,5 +50,6 @@ export class Task {
 
     @ManyToOne(() => Project, (project) => project.id, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'project_id' })
+    @Exclude()
     project: Project;
 }
