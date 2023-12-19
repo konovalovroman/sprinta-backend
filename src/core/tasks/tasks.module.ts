@@ -12,5 +12,6 @@ import { SprintsModule } from '../sprints/sprints.module';
     ],
     controllers: [TasksController],
     providers: [TasksService],
+    exports: [TasksService],
 })
 export class TasksModule {}

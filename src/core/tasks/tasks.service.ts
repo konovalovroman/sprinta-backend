@@ -70,7 +70,7 @@ export class TasksService {
         try {
             const task = await this.tasksRepository.findOne({
                 where: { id },
-                relations: ['author'],
+                relations: ['author', 'project.members'],
             });
             return task;
         } catch (err) {
