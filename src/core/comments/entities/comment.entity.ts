@@ -1,3 +1,5 @@
+import { Exclude } from 'class-transformer';
+import { Project } from 'src/core/projects/entities/project.entity';
 import { Task } from 'src/core/tasks/entities/task.entity';
 import { User } from 'src/core/users/entities/user.entity';
 import {
@@ -31,4 +33,9 @@ export class Comment {
     @ManyToOne(() => Task, (task) => task.id, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'task_id' })
     task: Task;
+
+    @ManyToOne(() => Project, (project) => project.id, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'project_id' })
+    @Exclude()
+    project: Project;
 }

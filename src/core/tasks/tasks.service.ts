@@ -7,6 +7,7 @@ import { CreateTaskData, SprintTasksQuery, TaskManipulationData } from './tasks.
 import { TaskStatus } from 'src/common/enums/taskStatus.enum';
 import { User } from '../users/entities/user.entity';
 import { hasRecordAffected } from 'src/common/helpers/affected-record.helper';
+import { isUserProjectMember } from 'src/common/helpers/project-users.helper';
 
 @Injectable()
 export class TasksService {
@@ -18,19 +19,16 @@ export class TasksService {
     ) {}
 
     async create(data: CreateTaskData): Promise<Task | null> {
-        const { sprintId, currentUserId, dto } = data;
+        const { currentUserId, dto } = data;
+        const { sprintId, name, description, estimation } = dto;
+
         const sprint = await this.sprintsService.findById(sprintId);
+        const isProjectMember = isUserProjectMember(sprint?.project, currentUserId);
 
-        const isUserProjectMember = sprint?.project.members.some((user) => {
-            return user.id === currentUserId;
-        });
-
-        if (!sprint || !isUserProjectMember) {
+        if (!sprint || !isProjectMember) {
             return null;
         }
         
-        const { name, description, estimation } = dto;
-
         const taskData: Partial<Task> = {
             name,
             description,
@@ -38,12 +36,13 @@ export class TasksService {
             status: sprint.started ? TaskStatus.BACKLOG : TaskStatus.TO_DO,
             sprint,
             author: { id: currentUserId } as User,
+            project: sprint?.project,
         };
 
         const task = this.tasksRepository.create(taskData);
 
         try {
-            const result =  await this.tasksRepository.save(task);
+            const result = await this.tasksRepository.save(task);
 
             delete result.author;
             delete result.sprint;
@@ -81,21 +80,17 @@ export class TasksService {
     }
 
     async update(data: TaskManipulationData): Promise<Task | null> {
-        const { id, sprintId, currentUserId, dto } = data;
+        const { id, currentUserId, dto } = data;
         try {
             const task = await this.tasksRepository.findOne({
                 where: {
                     id,
-                    sprint: { id: sprintId },
                 },
-                relations: ['author', 'sprint', 'sprint.project.members'],
+                relations: ['author', 'sprint', 'project.members'],
             });
-            console.log(task);
-            const isUserProjectMember = task?.sprint.project.members.some((user) => {
-                return user.id === currentUserId;
-            });
-
-            if (!task || !isUserProjectMember) {
+            const isProjectMember = isUserProjectMember(task?.project, currentUserId);
+            
+            if (!task || !isProjectMember) {
                 return null;
             }
 
@@ -131,20 +126,17 @@ export class TasksService {
     }
 
     async remove(data: TaskManipulationData): Promise<boolean> {
-        const { id, sprintId, currentUserId } = data;
+        const { id, currentUserId } = data;
         try {
             const task = await this.tasksRepository.findOne({
                 where: {
                     id,
-                    sprint: { id: sprintId },
                 },
-                relations: ['author', 'sprint', 'sprint.project.members'],
+                relations: ['author', 'project.members'],
             });
-            const isUserProjectMember = task?.sprint.project.members.some((user) => {
-                return user.id === currentUserId;
-            });
+            const isProjectMember = isUserProjectMember(task?.project, currentUserId);            
 
-            if (!task || !isUserProjectMember) {
+            if (!task || !isProjectMember) {
                 return false;
             }
 
@@ -165,15 +157,11 @@ export class TasksService {
                         id: sprintId,
                     },
                 },
-                relations: ['author', 'sprint.project.members'],
+                relations: ['author', 'project.members'],
             });
 
-            const project = tasks[0]?.sprint.project;
-            const isUserProjectMember = project.members.some((user) => {
-                return user.id === currentUserId;
-            });
-
-            if (!isUserProjectMember) {
+            const isProjectMember = isUserProjectMember(tasks[0]?.project, currentUserId);
+            if (!isProjectMember) {
                 return null;
             }
 
@@ -189,21 +177,17 @@ export class TasksService {
     }
 
     async findSprintTaskById(data: TaskManipulationData): Promise<Task | null> {
-        const { id, sprintId, currentUserId } = data;
+        const { id, currentUserId } = data;
         try {
             const task = await this.tasksRepository.findOne({
                 where: {
                     id,
-                    sprint: { id: sprintId },
                 },
-                relations: ['sprint', 'sprint.project', 'sprint.project.members'],
+                relations: ['sprint', 'project.members'],
             });
 
-            const isUserProjectMember = task?.sprint.project.members.some((user) => {
-                return user.id === currentUserId;
-            });
-
-            if (!isUserProjectMember) {
+            const isProjectMember = isUserProjectMember(task?.project, currentUserId);
+            if (!isProjectMember) {
                 return null;
             }
 

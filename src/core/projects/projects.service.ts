@@ -6,6 +6,7 @@ import { CreateProjectData, ProjectManipulationData } from './projects.types';
 import { hasRecordAffected } from 'src/common/helpers/affected-record.helper';
 import { UsersService } from '../users/users.service';
 import { ProjectMemberManipulationData } from './projects.types';
+import { isUserProjectMember, isUserProjectOwner } from 'src/common/helpers/project-users.helper';
 
 @Injectable()
 export class ProjectsService {
@@ -135,14 +136,12 @@ export class ProjectsService {
             this.usersService.findById(userId),
         ]);
 
-        const isProjectOwner = project?.owner?.id === currentUserId;
+        const isProjectOwner = isUserProjectOwner(project, currentUserId);
         if (!project || !user || !isProjectOwner) {
             return null;
         }
 
-        const isUserAlreadyMember = project.members.some((member) => {
-            return member.id === user.id;
-        });
+        const isUserAlreadyMember = isUserProjectMember(project, user.id);
         if (isUserAlreadyMember) {
             return project;
         }
@@ -163,7 +162,7 @@ export class ProjectsService {
             this.usersService.findById(userId),
         ]);
 
-        const isProjectOwner = project?.owner?.id === currentUserId;
+        const isProjectOwner = isUserProjectOwner(project, currentUserId);
         if (!project || !user || !isProjectOwner) {
             return null;
         }
