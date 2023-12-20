@@ -6,7 +6,7 @@ import { CreateProjectData, ProjectManipulationData } from './projects.types';
 import { hasRecordAffected } from 'src/common/helpers/affected-record.helper';
 import { UsersService } from '../users/users.service';
 import { ProjectMemberManipulationData } from './projects.types';
-import { isUserProjectMember, isUserProjectOwner } from 'src/common/helpers/project-users.helper';
+import { isUserProjectMember } from 'src/common/helpers/project-users.helper';
 
 @Injectable()
 export class ProjectsService {
@@ -18,17 +18,16 @@ export class ProjectsService {
     ) {}
 
     async create(data: CreateProjectData): Promise<Project | null> {
-        try {
-            const project = await this.projectsRepository.create(data);
-            const owner = await this.usersService.findById(data.ownerId);
+        const { name, ownerId } = data;
+        const owner = await this.usersService.findById(ownerId);
 
-            if (!owner) {
-                return null;
-            }
+        if (!owner) return null;
 
-            project.owner = owner;
-            project.members = [owner];
-            
+        const project = this.projectsRepository.create({ name });
+        project.owner = owner;
+        project.members = [owner];
+
+        try {  
             return await this.projectsRepository.save(project);
         } catch (err) {
             this.logger.error(err);
@@ -61,15 +60,11 @@ export class ProjectsService {
 
     async update(data: ProjectManipulationData): Promise<Project | null> {
         const { id, currentUserId, dto } = data;
-        const project = await this.findById(id);
+        const project = await this.findUserOwnedProjectById(id, currentUserId);
 
-        if (!project || project?.owner.id !== currentUserId) {
-            return null;
-        }
+        if (!project) return null;
 
-        if (dto?.name) {
-            project.name = dto.name;
-        }
+        project.name = dto.name;
 
         try {
             return await this.projectsRepository.save(project);
@@ -82,11 +77,9 @@ export class ProjectsService {
     async remove(data: ProjectManipulationData): Promise<boolean> {
         const { id, currentUserId } = data;
         try {
-            const project = await this.findById(id);
-
-            if (!project || project.owner?.id !== currentUserId) {
-                return false;
-            }
+            const project = await this.findUserOwnedProjectById(id, currentUserId);
+            
+            if (!project) return false;
 
             const result = await this.projectsRepository.delete(id);
             return hasRecordAffected(result);
@@ -132,19 +125,14 @@ export class ProjectsService {
     async addUserToProject(data: ProjectMemberManipulationData): Promise<Project | null> {
         const { id, userId, currentUserId } = data;
         const [project, user] = await Promise.all([
-            this.findById(id),
+            this.findUserOwnedProjectById(id, currentUserId),
             this.usersService.findById(userId),
         ]);
 
-        const isProjectOwner = isUserProjectOwner(project, currentUserId);
-        if (!project || !user || !isProjectOwner) {
-            return null;
-        }
+        if (!project || !user) return null;
 
         const isUserAlreadyMember = isUserProjectMember(project, user.id);
-        if (isUserAlreadyMember) {
-            return project;
-        }
+        if (isUserAlreadyMember) return project;
 
         try {
             project.members = [...project.members, user];
@@ -153,19 +141,14 @@ export class ProjectsService {
             this.logger.error(err);
             return null;
         }
+
     }
 
     async removeUserFromProject(data: ProjectMemberManipulationData): Promise<Project | null> {
         const { id, userId, currentUserId } = data;
-        const [project, user] = await Promise.all([
-            this.findById(id),
-            this.usersService.findById(userId),
-        ]);
+        const project = await this.findUserOwnedProjectById(id, currentUserId);
 
-        const isProjectOwner = isUserProjectOwner(project, currentUserId);
-        if (!project || !user || !isProjectOwner) {
-            return null;
-        }
+        if (!project) return null;
 
         if (project.owner.id === userId) {
             return null;
@@ -176,6 +159,23 @@ export class ProjectsService {
                 return user.id !== userId;
             });
             return await this.projectsRepository.save(project);
+        } catch (err) {
+            this.logger.error(err);
+            return null;
+        }
+    }
+
+    private async findUserOwnedProjectById(id: number, userId: number): Promise<Project | null> {
+        try {
+            const project = await this.projectsRepository.findOne({
+                where: {
+                    id,
+                    owner: { id: userId },
+                },
+                relations: ['owner', 'members'],
+            });
+            
+            return project;
         } catch (err) {
             this.logger.error(err);
             return null;
