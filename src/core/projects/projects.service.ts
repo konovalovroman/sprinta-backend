@@ -122,6 +122,23 @@ export class ProjectsService {
         }
     }
 
+    async findUserOwnedProjectById(id: number, userId: number): Promise<Project | null> {
+        try {
+            const project = await this.projectsRepository.findOne({
+                where: {
+                    id,
+                    owner: { id: userId },
+                },
+                relations: ['owner', 'members'],
+            });
+            
+            return project;
+        } catch (err) {
+            this.logger.error(err);
+            return null;
+        }
+    }
+
     async addUserToProject(data: ProjectMemberManipulationData): Promise<Project | null> {
         const { id, userId, currentUserId } = data;
         const [project, user] = await Promise.all([
@@ -159,23 +176,6 @@ export class ProjectsService {
                 return user.id !== userId;
             });
             return await this.projectsRepository.save(project);
-        } catch (err) {
-            this.logger.error(err);
-            return null;
-        }
-    }
-
-    private async findUserOwnedProjectById(id: number, userId: number): Promise<Project | null> {
-        try {
-            const project = await this.projectsRepository.findOne({
-                where: {
-                    id,
-                    owner: { id: userId },
-                },
-                relations: ['owner', 'members'],
-            });
-            
-            return project;
         } catch (err) {
             this.logger.error(err);
             return null;
