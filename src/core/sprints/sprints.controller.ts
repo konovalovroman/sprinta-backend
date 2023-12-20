@@ -48,7 +48,7 @@ export class SprintsController {
             currentUserId,
         });
 
-        if (!sprints) {
+        if (!sprints.length) {
             throw new NotFoundException('Sprints not found for a given project');
         }
 

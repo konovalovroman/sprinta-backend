@@ -5,7 +5,6 @@ import { Repository } from 'typeorm';
 import { ProjectsService } from '../projects/projects.service';
 import { CreateSprintData, ProjectSprintsQuery, SprintManipulationData } from './spritns.types';
 import { hasRecordAffected } from 'src/common/helpers/affected-record.helper';
-import { isUserProjectMember, isUserProjectOwner } from 'src/common/helpers/project-users.helper';
 
 @Injectable()
 export class SprintsService {
@@ -19,12 +18,10 @@ export class SprintsService {
     async create(data: CreateSprintData): Promise<Sprint | null> {
         const { currentUserId, dto } = data;
         const { name, endsAt, projectId } = dto;
-        const project = await this.projectsService.findById(projectId);
-        const isProjectOwner = isUserProjectOwner(project, currentUserId);
+        const project = await this.projectsService
+            .findUserOwnedProjectById(projectId, currentUserId);
 
-        if (!project || !isProjectOwner) {
-            return null;
-        }
+        if (!project) return null;
 
         delete project.members;
 
@@ -69,13 +66,9 @@ export class SprintsService {
 
     async update(data: SprintManipulationData): Promise<Sprint | null> {
         const { id, currentUserId, dto } = data;
-        const sprint = await this.findById(id);
+        const sprint = await this.findSprintForProjectOwnerById(id, currentUserId);
 
-        const isProjectOwner = isUserProjectOwner(sprint?.project, currentUserId);
-
-        if (!sprint || !isProjectOwner) {
-            return null;
-        }
+        if (!sprint) return null;
 
         const { name, started } = dto;
 
@@ -96,13 +89,9 @@ export class SprintsService {
 
     async remove(data: SprintManipulationData): Promise<boolean> {
         const { id, currentUserId } = data;
-        const sprint = await this.findById(id);
-        
-        const isProjectOwner = isUserProjectOwner(sprint?.project, currentUserId);
+        const sprint = await this.findSprintForProjectOwnerById(id, currentUserId);
 
-        if (!sprint || !isProjectOwner) {
-            return false;
-        }
+        if (!sprint) return false;
 
         try {
             const result = await this.sprintsRepository.delete(id);
@@ -118,21 +107,11 @@ export class SprintsService {
         try {
             const sprints = await this.sprintsRepository.find({
                 where: {
-                    project: {
+                    project: { 
                         id: projectId,
+                        members: { id: currentUserId },
                     },
                 },
-                relations: ['project', 'project.members'],
-            });
-
-            const isProjectMember = isUserProjectMember(sprints[0]?.project, currentUserId);
-
-            if (!isProjectMember) {
-                return null;
-            }
-            
-            sprints.forEach((sprint) => {
-                delete sprint.project;
             });
 
             return sprints;
@@ -148,17 +127,26 @@ export class SprintsService {
             const sprint = await this.sprintsRepository.findOne({
                 where: {
                     id,
+                    project: { members: { id: currentUserId } },
                 },
-                relations: ['project.members'],
             });
 
-            const isProjectMember = isUserProjectMember(sprint?.project, currentUserId);
+            return sprint;
+        } catch (err) {
+            this.logger.error(err);
+            return null;
+        }
+    }
 
-            if (!sprint || !isProjectMember) {
-                return null;
-            }
+    async findSprintForProjectOwnerById(id: number, userId: number): Promise<Sprint | null> {
+        try {
+            const sprint = await this.sprintsRepository.findOne({
+                where: {
+                    id,
+                    project: { owner: { id: userId } },
+                },
+            });
 
-            delete sprint.project;
             return sprint;
         } catch (err) {
             this.logger.error(err);
