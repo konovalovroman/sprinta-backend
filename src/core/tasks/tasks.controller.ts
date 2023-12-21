@@ -48,7 +48,7 @@ export class TasksController {
             currentUserId,
         });
 
-        if (!tasks) {
+        if (!tasks.length) {
             throw new NotFoundException('Tasks not found for a given sprint');
         }
 
@@ -60,7 +60,7 @@ export class TasksController {
         @Param('id', ParseIntPipe) id: number,
         @CurrentUser('sub') currentUserId: number,
     ) {
-        const task = await this.tasksService.findSprintTaskById({
+        const task = await this.tasksService.findTaskForProjectMemberById({
             id,
             currentUserId,
         });

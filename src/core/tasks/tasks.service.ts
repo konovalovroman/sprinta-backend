@@ -25,9 +25,7 @@ export class TasksService {
         const sprint = await this.sprintsService.findById(sprintId);
         const isProjectMember = isUserProjectMember(sprint?.project, currentUserId);
 
-        if (!sprint || !isProjectMember) {
-            return null;
-        }
+        if (!sprint || !isProjectMember) return null;
         
         const taskData: Partial<Task> = {
             name,
@@ -36,7 +34,7 @@ export class TasksService {
             status: sprint.started ? TaskStatus.BACKLOG : TaskStatus.TO_DO,
             sprint,
             author: { id: currentUserId } as User,
-            project: sprint?.project,
+            project: sprint.project,
         };
 
         const task = this.tasksRepository.create(taskData);
@@ -82,17 +80,9 @@ export class TasksService {
     async update(data: TaskManipulationData): Promise<Task | null> {
         const { id, currentUserId, dto } = data;
         try {
-            const task = await this.tasksRepository.findOne({
-                where: {
-                    id,
-                },
-                relations: ['author', 'sprint', 'project.members'],
-            });
-            const isProjectMember = isUserProjectMember(task?.project, currentUserId);
+            const task = await this.findTaskForProjectMemberById({ id, currentUserId });
             
-            if (!task || !isProjectMember) {
-                return null;
-            }
+            if (!task) return null;
 
             const isSprintStarted = task.sprint.started;
             const { name, description, estimation, status } = dto;
@@ -107,10 +97,11 @@ export class TasksService {
                 task.estimation = estimation;
             }
 
-            const isStatusUpdates = status &&
+            const isStatusUpdates = 
+                status &&
                 isSprintStarted &&
-                task.status !== TaskStatus.BACKLOG &&
-                status !== TaskStatus.BACKLOG;
+                !(isSprintStarted && task.status === TaskStatus.BACKLOG);
+
 
             if (isStatusUpdates) {
                 task.status = status;
@@ -128,17 +119,9 @@ export class TasksService {
     async remove(data: TaskManipulationData): Promise<boolean> {
         const { id, currentUserId } = data;
         try {
-            const task = await this.tasksRepository.findOne({
-                where: {
-                    id,
-                },
-                relations: ['author', 'project.members'],
-            });
-            const isProjectMember = isUserProjectMember(task?.project, currentUserId);            
-
-            if (!task || !isProjectMember) {
-                return false;
-            }
+            const task = await this.findTaskForProjectMemberById({ id, currentUserId });
+            
+            if (!task) return null;
 
             const result = await this.tasksRepository.delete(id);
             return hasRecordAffected(result);
@@ -153,20 +136,10 @@ export class TasksService {
         try {
             const tasks = await this.tasksRepository.find({
                 where: {
-                    sprint: {
-                        id: sprintId,
-                    },
+                    sprint: { id: sprintId },
+                    project: { members: { id: currentUserId } },
                 },
-                relations: ['author', 'project.members'],
-            });
-
-            const isProjectMember = isUserProjectMember(tasks[0]?.project, currentUserId);
-            if (!isProjectMember) {
-                return null;
-            }
-
-            tasks.forEach((task) => {
-                delete task.sprint;
+                relations: ['author'],
             });
 
             return tasks;
@@ -176,20 +149,18 @@ export class TasksService {
         }
     }
 
-    async findSprintTaskById(data: TaskManipulationData): Promise<Task | null> {
+    async findTaskForProjectMemberById(data: TaskManipulationData): Promise<Task | null> {
         const { id, currentUserId } = data;
         try {
             const task = await this.tasksRepository.findOne({
                 where: {
                     id,
+                    project: { members: { id: currentUserId } },
                 },
-                relations: ['sprint', 'project.members'],
+                relations: ['author', 'sprint'],
             });
-
-            const isProjectMember = isUserProjectMember(task?.project, currentUserId);
-            if (!isProjectMember) {
-                return null;
-            }
+            
+            if (!task) return null;
 
             return task;
         } catch (err) {
