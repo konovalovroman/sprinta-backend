@@ -60,7 +60,7 @@ export class SprintsController {
         @Param('id', ParseIntPipe) id: number,
         @CurrentUser('sub') currentUserId: number,
     ) {
-        const sprint = await this.sprintsService.findProjectSprintById({
+        const sprint = await this.sprintsService.findSprintForProjectMemberById({
             id,
             currentUserId,
         });

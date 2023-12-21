@@ -66,7 +66,10 @@ export class SprintsService {
 
     async update(data: SprintManipulationData): Promise<Sprint | null> {
         const { id, currentUserId, dto } = data;
-        const sprint = await this.findSprintForProjectOwnerById(id, currentUserId);
+        const sprint = await this.findSprintForProjectOwnerById({
+            id,
+            currentUserId,
+        });
 
         if (!sprint) return null;
 
@@ -89,7 +92,10 @@ export class SprintsService {
 
     async remove(data: SprintManipulationData): Promise<boolean> {
         const { id, currentUserId } = data;
-        const sprint = await this.findSprintForProjectOwnerById(id, currentUserId);
+        const sprint = await this.findSprintForProjectOwnerById({
+            id,
+            currentUserId,
+        });
 
         if (!sprint) return false;
 
@@ -121,7 +127,7 @@ export class SprintsService {
         }
     }
 
-    async findProjectSprintById(data: SprintManipulationData): Promise<Sprint | null> {
+    async findSprintForProjectMemberById(data: SprintManipulationData): Promise<Sprint | null> {
         const { id, currentUserId } = data;
         try {
             const sprint = await this.sprintsRepository.findOne({
@@ -138,12 +144,13 @@ export class SprintsService {
         }
     }
 
-    async findSprintForProjectOwnerById(id: number, userId: number): Promise<Sprint | null> {
+    async findSprintForProjectOwnerById(data: SprintManipulationData): Promise<Sprint | null> {
+        const { id, currentUserId } = data;
         try {
             const sprint = await this.sprintsRepository.findOne({
                 where: {
                     id,
-                    project: { owner: { id: userId } },
+                    project: { owner: { id: currentUserId } },
                 },
             });
 
