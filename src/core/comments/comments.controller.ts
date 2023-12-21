@@ -49,7 +49,7 @@ export class CommentsController {
         });
 
         if (!comments.length) {
-            throw new BadRequestException('Comments not found for given task');
+            throw new NotFoundException('Comments not found for given task');
         }
 
         return comments;

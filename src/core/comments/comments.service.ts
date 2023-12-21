@@ -24,9 +24,7 @@ export class CommentsService {
         const task = await this.tasksService.findById(taskId);
         const isProjectMember = isUserProjectMember(task?.project, currentUserId);
 
-        if (!task || !isProjectMember) {
-            return null;
-        }
+        if (!task || !isProjectMember) return null;
 
         const comment = this.commentsRepository.create({
             text,
@@ -60,6 +58,7 @@ export class CommentsService {
             const comment = await this.commentsRepository.findOne({
                 where: { id },
             });
+
             return comment;
         } catch (err) {
             this.logger.error(err);
@@ -70,18 +69,12 @@ export class CommentsService {
     async update(data: CommentManipulationData): Promise<Comment | null> {
         const { id, currentUserId, dto } = data;
         try {
-            const comment = await this.commentsRepository.findOne({
-                where: {
-                    id,
-                    project: { members: { id: currentUserId } },
-                    author: { id: currentUserId },
-                },
-                relations: ['task'],
+            const comment = await this.findOneCommentAuthoredByUser({
+                id,
+                currentUserId,
             });
 
-            if (!comment) {
-                return null;
-            }
+            if (!comment) return null;
 
             comment.text = dto.text;
 
@@ -95,18 +88,12 @@ export class CommentsService {
     async remove(data: CommentManipulationData): Promise<boolean> {
         const { id, currentUserId } = data;
         try {
-            const comment = await this.commentsRepository.findOne({
-                where: {
-                    id,
-                    project: { members: { id: currentUserId } },
-                    author: { id: currentUserId },
-                },
-                relations: ['task'],
+            const comment = await this.findOneCommentAuthoredByUser({
+                id,
+                currentUserId,
             });
 
-            if (!comment) {
-                return false;
-            }
+            if (!comment) return false;
 
             const result = await this.commentsRepository.delete(id);
             return hasRecordAffected(result);
@@ -126,6 +113,7 @@ export class CommentsService {
                 },
                 relations: ['author'],
             });
+            
             return comments;
         } catch (err) {
             this.logger.error(err);
@@ -142,6 +130,25 @@ export class CommentsService {
                     project: { members: { id: currentUserId } },
                 },
                 relations: ['task', 'author'],
+            });
+
+            return comment;
+        } catch (err) {
+            this.logger.error(err);
+            return null;
+        }
+    }
+
+    async findOneCommentAuthoredByUser(data: CommentManipulationData): Promise<Comment | null> {
+        const { id, currentUserId } = data;
+        try {
+            const comment = await this.commentsRepository.findOne({
+                where: {
+                    id,
+                    project: { members: { id: currentUserId } },
+                    author: { id: currentUserId },
+                },
+                relations: ['task'],
             });
 
             return comment;
