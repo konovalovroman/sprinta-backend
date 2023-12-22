@@ -10,19 +10,23 @@ import {
     Param,
     ParseIntPipe,
     Patch,
+    Query,
     UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserManipulationGuard } from 'src/common/guards/user-manipulation.guard';
+import { SearchUsersDto } from './dto/search-users.dto';
 
 @Controller('users')
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
     @Get()
-    async find() {
-        const users = await this.usersService.find();
+    async find(
+        @Query() query: SearchUsersDto,
+    ) {
+        const users = await this.usersService.find(query);
         return users;
     }
 

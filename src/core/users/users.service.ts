@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { hashString } from 'src/common/helpers/hash.helper';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { hasRecordAffected } from 'src/common/helpers/affected-record.helper';
+import { SearchUsersDto } from './dto/search-users.dto';
 
 @Injectable()
 export class UsersService {
@@ -28,9 +29,21 @@ export class UsersService {
         }
     }
 
-    async find(): Promise<User[]> {
+    async find(searchQuery?: SearchUsersDto): Promise<User[]> {
         try {
-            const users = await this.usersRepository.find();
+            const queryBuilder = this.usersRepository.createQueryBuilder('user');
+
+            if (searchQuery?.email) {
+                queryBuilder.andWhere('user.email = :email', { email: searchQuery.email });
+            }
+
+            if (searchQuery?.username) {
+                queryBuilder.andWhere('user.username = :username', {
+                    username: searchQuery.username,
+                });
+            }
+            
+            const users = await queryBuilder.getMany();
             return users;
         } catch (err) {
             this.logger.error(err);
