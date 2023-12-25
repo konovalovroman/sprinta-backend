@@ -14,6 +14,7 @@ async function bootstrap() {
 
     app.useGlobalPipes(new ValidationPipe());
     app.use(cookieParser(cookieSecret));
+    app.setGlobalPrefix('api/v1');
 
     await app.listen(port);
 }
