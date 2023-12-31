@@ -75,7 +75,7 @@ DB_HOST=sprinta-db
 REDIS_HOST=sprinta-redis
 ```
 
-Then just make `docker-compose up`
+Then just run `docker-compose up`
 
 ### Application access
 For example, you set PORT=3000, now you can access the application using these URLs:
