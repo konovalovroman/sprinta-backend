@@ -12,10 +12,10 @@ import { JwtAccessGuard } from './common/guards/jwt-access.guard';
         ConfigModule.forRoot({
             isGlobal: true,
         }),
-        CoreModule,
         DatabaseModule,
-        AuthModule,
         RedisModule,
+        AuthModule,
+        CoreModule,
     ],
     providers: [
         {

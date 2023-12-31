@@ -17,11 +17,22 @@ import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { Cookies } from 'src/common/decorators/cookies.decorator';
 import { PublicRoute } from 'src/common/decorators/public-route.decorator';
 import { JwtRefreshGuard } from 'src/common/guards/jwt-refresh.guard';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Auth')
+@ApiBearerAuth()
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: 'User successfully signed up, returns accessToken, set refreshToken cookie',
+    })
+    @ApiResponse({
+        status: HttpStatus.BAD_REQUEST,
+        description: 'Sign up failed',
+    })
     @PublicRoute()
     @HttpCode(HttpStatus.OK)
     @Post('local/signup')
@@ -35,6 +46,14 @@ export class AuthController {
         return { accessToken };
     }
 
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: 'User successfully signed in, returns accessToken, set refreshToken cookie',
+    })
+    @ApiResponse({
+        status: HttpStatus.BAD_REQUEST,
+        description: 'Sign in failed',
+    })
     @PublicRoute()
     @HttpCode(HttpStatus.OK)
     @Post('local/signin')
@@ -48,6 +67,14 @@ export class AuthController {
         return { accessToken };
     }
 
+    @ApiResponse({
+        status: HttpStatus.NO_CONTENT,
+        description: 'User loged out',
+    })
+    @ApiResponse({
+        status: HttpStatus.UNAUTHORIZED,
+        description: 'User not loged in',
+    })
     @HttpCode(HttpStatus.NO_CONTENT)
     @Post('logout')
     async logout(
@@ -59,6 +86,15 @@ export class AuthController {
         return;
     }
 
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: `Successfully refreshed pair of auth tokens, 
+                      returns accessToken, set refreshToken cookie`,
+    })
+    @ApiResponse({
+        status: HttpStatus.UNAUTHORIZED,
+        description: 'No or wrong token provided',
+    })
     @PublicRoute()
     @UseGuards(JwtRefreshGuard)
     @HttpCode(HttpStatus.OK)
