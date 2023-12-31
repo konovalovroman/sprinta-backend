@@ -78,7 +78,8 @@ REDIS_HOST=sprinta-redis
 Then just make `docker-compose up`
 
 ### Application access
-<p>For example, you set PORT=3000, now you can access the application using these URLs:</p>
+For example, you set PORT=3000, now you can access the application using these URLs:
+
 * [http://localhost:3000/api/v1](http://localhost:3000/api/v1) – base API url
 * [http://localhost:3000/swagger](http://localhost:3000/swagger) – Swagger API documentation
 * [http://localhost:5050](http://localhost:5050) – pgAdmin *(Only if running application with Docker)*
