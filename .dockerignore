@@ -1,0 +1,9 @@
+.husky
+dist
+node_modules
+.env.example
+.git
+Dockerfile*
+docker-compose.yml
+logo.svg
+readme.md

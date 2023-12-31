@@ -1,0 +1,43 @@
+version: '3.8'
+services:
+  sprinta-backend:
+    container_name: sprinta-backend
+    build: .
+    ports:
+      - '${PORT}:${PORT}'
+    env_file:
+      - ./.env
+    depends_on:
+      - sprinta-db
+      - sprinta-redis
+
+  sprinta-db:
+    container_name: sprinta-db
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - sprinta-db-data:/var/lib/postgresql/data
+
+  sprinta-redis:
+    container_name: sprinta-redis
+    image: redis:7.2-alpine
+    volumes:
+      - sprinta-redis-data:/data
+
+  pgadmin:
+    container_name: sprinta-pgadmin
+    image: dpage/pgadmin4
+    restart: always
+    ports:
+      - 5050:80
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+    depends_on:
+      - sprinta-db
+volumes:
+  sprinta-db-data: {}
+  sprinta-redis-data: {}
