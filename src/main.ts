@@ -16,7 +16,9 @@ async function bootstrap() {
     app.useGlobalPipes(new ValidationPipe());
     app.use(cookieParser(cookieSecret));
     app.setGlobalPrefix('api/v1');
-    app.enableCors();
+    app.enableCors({
+        credentials: true,
+    });
 
     const swaggerConfig = new DocumentBuilder()
         .setTitle('Sprinta API')
