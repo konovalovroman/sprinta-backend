@@ -18,6 +18,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserManipulationGuard } from 'src/common/guards/user-manipulation.guard';
 import { SearchUsersDto } from './dto/search-users.dto';
 import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -53,6 +54,27 @@ export class UsersController {
     ) {
         const users = await this.usersService.find(query);
         return users;
+    }
+
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: 'Get current user',
+    })
+    @ApiResponse({
+        status: HttpStatus.NOT_FOUND,
+        description: 'User not found',
+    })
+    @ApiResponse({
+        status: HttpStatus.UNAUTHORIZED,
+        description: 'User not logged in',
+    })
+    @Get('me')
+    async findCurrentUser(@CurrentUser('sub') currentUserId: number) {
+        const user = await this.usersService.findById(currentUserId);
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        return user;
     }
 
     @ApiResponse({

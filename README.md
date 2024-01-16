@@ -56,7 +56,8 @@ COOKIE_SECRET=
 ### Running application
 <p>Make sure you have running Postgresql and Redis instances
 </p>
-**Do not forget to run database migrations before the first start:** `yarn migration:run`
+**Do not forget to run database migrations before the first start:**
+`yarn migration:run`
 
 ```
 yarn start
@@ -67,7 +68,7 @@ yarn build
 yarn start:prod
 ```
 
-### Running application with docker
+### Running application with Docker
 If you are running an application with Docker, make sure you have DB\_HOST and REDIS\_HOST defined this way:
 
 ```
